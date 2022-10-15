@@ -1,10 +1,13 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   CookieOptions,
   createBrowserSupabaseClient as _createBrowserSupabaseClient,
   createServerSupabaseClient as _createServerSupabaseClient
 } from '@supabase/auth-helpers-shared';
 
+import { useContext, QRL } from '@builder.io/qwik'
 import { RequestEvent } from '@builder.io/qwik-city'
+import { SupabaseContext } from './components/SupabaseProvider'
 
 export type { Session, User, SupabaseClient } from '@supabase/supabase-js';
 
@@ -55,4 +58,19 @@ export function createServerSupabaseClient<
     setHeader: (key, value: string) => event.response.headers.set(key, value),
     cookieOptions
   });
+}
+
+export type QRLSupaBaseAuth = QRL<() => Promise<SupabaseClient['auth']>>
+export type QRLSupaBase = QRL<() => SupabaseClient>
+
+export function useSupabase(): QRLSupaBase {
+  const ctx = useContext(SupabaseContext)
+
+  if (!ctx) {
+    throw new Error(
+      'useSupabase must be used within a component tree that calls useContextProvider'
+    )
+  }
+
+  return ctx
 }
